@@ -3,11 +3,22 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable("dict", function (table) {
-    table.increments("id").primary();
-    table.string("ja").index();
-    table.string("en").index();
-  });
+  return knex.schema
+    .createTable("dict", function (table) {
+      table.increments();
+      table.text("ja").index();
+      table.text("en").index();
+      table.unique("ja", "en");
+    })
+    .raw(
+      `CREATE UNIQUE INDEX i_unique_dict ON dict (ja, (en IS NULL OR en = '')) WHERE en IS NULL OR en = '';`
+    )
+    .raw(
+      `CREATE UNIQUE INDEX i_unique_dict2 ON dict ((ja IS NULL OR ja = ''), en) WHERE ja IS NULL OR ja = '';`
+    )
+    .raw(
+      `CREATE UNIQUE INDEX i_unique_dict3 ON dict ((ja IS NULL OR ja = ''), (en IS NULL OR en = '')) WHERE (ja IS NULL OR ja = '') AND (en IS NULL OR en = '');`
+    );
 };
 
 /**
