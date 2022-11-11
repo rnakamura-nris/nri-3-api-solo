@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable("Dict", function (table) {
+  return knex.schema.createTable("dict", function (table) {
     table.increments("id").primary();
     table.string("ja").index();
     table.string("en").index();
@@ -15,5 +15,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  knex.schema.dropTable("Dict");
+  knex.schema.dropTable("dict");
 };
