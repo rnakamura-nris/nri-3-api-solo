@@ -1,0 +1,31 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "chai": "^4.3.7",
+    "chai-http": "^4.3.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "knex": "^2.3.0",
+    "mocha": "^10.1.0",
+    "pg": "^8.8.0"
+  },
+  "name": "nri-3-api-solo",
+  "description": "## テーマ：エンタメ作品名の日本語・英語対照テーブルを操作するための API",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test",
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rnakamura-nris/nri-3-api-solo.git"
+  },
+  "author": "Nakamura Ryota",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/rnakamura-nris/nri-3-api-solo/issues"
+  },
+  "homepage": "https://github.com/rnakamura-nris/nri-3-api-solo#readme"
+}
