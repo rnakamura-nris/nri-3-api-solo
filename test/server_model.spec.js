@@ -408,6 +408,24 @@ describe("Model", () => {
       expect(assertedItemsArray[0].en).to.eq("World of Light");
     });
 
+    it("should update item when existed id and the pair of (ja:null, en:empty) is specified", async () => {
+      await serverModel.update(LastIdNum + 5, {
+        ja: "dummy",
+        en: "dummy",
+      }); // これを実施しておかないと、一意性違反になるので注意
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 4,
+        {
+          ja: null,
+          en: "",
+        }
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 4);
+      expect(assertedItemsArray[0].ja).to.null;
+      expect(assertedItemsArray[0].en).to.null;
+    });
+
     it("shouldn't update item when non-existed id is specified", async () => {
       const {
         recordsArray: assertedItemsArray,
