@@ -122,32 +122,38 @@ module.exports = {
 
   /**
    * de-duplicate items.
-   * @param {Object} queryJsonArray - The array of items.
+   * @param {Array} queryJsonArray - The array of items.
    * @return {Object} The array of deduplicated items.
    */
   deDupJsonQueryArray(jsonQueryArray) {
-    return jsonQueryArray.filter((elm, i, self) => {
-      self.findIndex((elm2) => {
-        let tmp = true;
+    const result = jsonQueryArray.filter((elm, i, self) => {
+      const fTmp = self.findIndex((elm2) => {
+        let fiTmp = true;
         Keys.forEach((key) => {
-          tmp &&= elm[key] === elm2[key];
+          fiTmp = fiTmp && elm2[key] === elm[key];
         });
-      }) === i;
+        return fiTmp;
+      });
+      return fTmp === i;
     });
+
+    return result;
   },
 
   /**
    * Create a new order.
-   * @param {Object} queryJson - The new item data to add. Both array or not is accepted.
+   * @param {Object | Array} queryJson - The new item data to add. Both array or not is accepted.
    * @return {Promise<number>} A promise that resolves to the order that was created.
    */
   create(queryJson) {
     let newQueryJsonArray = new Array();
 
     if (Array.isArray(queryJson)) {
-      newQueryJsonArray = deDupJsonQueryArray(
+      newQueryJsonArray = this.deDupJsonQueryArray(
         queryJson.map((elm) => this.parseJsonQuery(elm))
       );
+
+      //newQueryJsonArray = queryJson.map((elm) => this.parseJsonQuery(elm));
     } else {
       newQueryJsonArray.push(this.parseJsonQuery(queryJson));
     }

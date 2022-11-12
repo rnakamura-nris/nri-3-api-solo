@@ -289,5 +289,40 @@ describe("Model", () => {
       expect(errorCode).to.eq(23505); // 一意性違反
       expect(errorMsg).not.to.be.null;
     });
+
+    it("should insert the array within deplication item.", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.create([
+        {
+          ja: "マッシュル-MASHLE-",
+          en: "Mashle: Magic and Muscles",
+        },
+        {
+          ja: "創約 とある魔術の禁書目録",
+          en: "A Certain Magical Index: Genesis Testament",
+        },
+        {
+          ja: "マッシュル-MASHLE-",
+          en: "Mashle: Magic and Muscles",
+        },
+      ]);
+      expect(assertedItemsArray.length).to.eq(2);
+
+      assertedItemsArray[0].id.should.deep.equal(
+        LastIdNum + fixtures.getSamples().length + 1
+      );
+      assertedItemsArray[0].ja.should.deep.equal("マッシュル-MASHLE-");
+      assertedItemsArray[0].en.should.deep.equal("Mashle: Magic and Muscles");
+      assertedItemsArray[1].id.should.deep.equal(
+        LastIdNum + fixtures.getSamples().length + 2
+      );
+      assertedItemsArray[1].ja.should.deep.equal("創約 とある魔術の禁書目録");
+      assertedItemsArray[1].en.should.deep.equal(
+        "A Certain Magical Index: Genesis Testament"
+      );
+    });
   });
 });
