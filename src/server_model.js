@@ -37,6 +37,14 @@ module.exports = {
    * @return {Promise<Object>} A promise that resolves to the item that matches the id.
    */
   getById(id) {
+    if (!Number.isInteger(id)) {
+      return {
+        recordsArray: null,
+        errorCode: -1,
+        errorMsg: "query is something wrong.",
+      };
+    }
+
     return knex
       .select()
       .from(TABLE_NAME)
@@ -59,10 +67,18 @@ module.exports = {
   },
 
   /**
-   * @param {Object} jsonQuery - The new item data to add. AN ARRAY IS NOT ACCEPTED.
-   * @return {Promise<Object>} A promise that resolves to the item that matches the id.
+   * @param {Object} jsonQuery - The item data to select. AN ARRAY IS NOT ACCEPTED.
+   * @return {Promise<Object>} A promise that resolves to the item that matches the jsonQuery.
    */
   getByContents(jsonQuery) {
+    if (!this.isJson(jsonQuery)) {
+      return {
+        recordsArray: null,
+        errorCode: -1,
+        errorMsg: "query is something wrong.",
+      };
+    }
+
     let query = knex.select().from(TABLE_NAME);
     Keys.forEach((key) =>
       query.where((qb) => {
@@ -99,15 +115,11 @@ module.exports = {
 
   /**
    * Parse jsonQuery for INSERT or UPDATE.
-   * @param {Object} queryJson - The item. AN ARRAY IS NOT ACCEPTED.
+   * @param {Object} queryJson - The item. AN ARRAY AND AND ZERO LENGTH JSON IS NOT ACCEPTED.
    * @return {Object} The parsed item.
    */
   parseJsonQuery(jsonQuery, insertModeEnabled = true) {
-    if (
-      !jsonQuery instanceof Object ||
-      jsonQuery instanceof Array ||
-      Object.keys(jsonQuery).length < 1
-    ) {
+    if (!this.isJson(jsonQuery) || Object.keys(jsonQuery).length < 1) {
       return null;
     }
 
@@ -133,6 +145,26 @@ module.exports = {
     return newJsonQuery;
   },
 
+  isJson(target) {
+    try {
+      let target2;
+      if (typeof target !== "string") {
+        target2 = JSON.stringify(target);
+      } else {
+        target2 = target;
+      }
+
+      target2 = JSON.parse(target2);
+      if (typeof target2 === "object" && target2 !== null) {
+        return true;
+      }
+    } catch {
+      return false;
+    }
+
+    return false;
+  },
+
   /**
    * de-duplicate items.
    * @param {Array} queryJsonArray - The array of items.
@@ -144,7 +176,15 @@ module.exports = {
     }
 
     const result = jsonQueryArray.filter((elm, i, self) => {
+      if (!this.isJson(elm)) {
+        return false;
+      }
+
       const fTmp = self.findIndex((elm2) => {
+        if (!this.isJson(elm2)) {
+          return false;
+        }
+
         let fiTmp = true;
         Keys.forEach((key) => {
           fiTmp = fiTmp && elm2[key] === elm[key];
@@ -159,7 +199,7 @@ module.exports = {
 
   /**
    * Create a new order.
-   * @param {Object | Array} queryJson - The new item data to add. Both array or not is accepted.
+   * @param {Object | Array} queryJson - The new item data to add. Both array or not is accepted. ZERO LENGTH JSON IS NOT ACCEPTED.
    * @return {Promise<number>} A promise that resolves to the order that was created.
    */
   create(queryJson) {
@@ -206,14 +246,12 @@ module.exports = {
 
   /**
    * @param {number} id - The item's id.
-   * @param {Object} queryJson - The new item data to modify. AN ARRAY IS NOT ACCEPTED.
+   * @param {Object} queryJson - The new item data to modify. AN ARRAY AND ZERO LENGTH JSON IS NOT ACCEPTED.
    * @return {Promise<number>} A promise that resolves to the id of the updated item.
    */
-  update(id, queryJson) {
+  updateById(id, queryJson) {
     const newQueryJson = this.parseJsonQuery(queryJson, false);
-
-    // update句にnullやundefinedが入ると例外で落ちるので、事前にチェックする
-    if (!newQueryJson) {
+    if (!Number.isInteger(id) || !newQueryJson) {
       return {
         recordsArray: null,
         errorCode: -1,
@@ -235,6 +273,39 @@ module.exports = {
       .catch((err) => {
         return {
           recordsArray: null,
+          errorCode: Number(err.code),
+          errorMsg: err.message,
+        };
+      });
+  },
+
+  /**
+   * @param {number} id - The item's id.
+   * @return {Promise<Object>} A promise that resolves to the item that matches the id.
+   */
+  deleteById(id) {
+    if (!Number.isInteger(id)) {
+      return {
+        recordsArray: null,
+        errorCode: -1,
+        errorMsg: "query is something wrong.",
+      };
+    }
+
+    return knex(TABLE_NAME)
+      .delete()
+      .where("id", "=", id)
+      .returning("*")
+      .then((res) => {
+        return {
+          recordsArray: res,
+          errorCode: null,
+          errorMsg: null,
+        };
+      })
+      .catch((err) => {
+        return {
+          record: null,
           errorCode: Number(err.code),
           errorMsg: err.message,
         };

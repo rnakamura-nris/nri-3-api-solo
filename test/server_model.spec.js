@@ -82,7 +82,7 @@ describe("Model", () => {
         errorMsg: errorMsg,
       } = await serverModel.getById("a");
       expect(assertItemsArray).to.null;
-      expect(errorCode).to.be.NaN;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
       expect(errorMsg).not.to.null;
     });
   });
@@ -190,10 +190,21 @@ describe("Model", () => {
       assertedItemsArray[0].should.deep.equal(expectedItemsArray1[0]);
     });
 
-    it("should search when any column selected", async () => {
+    it("should search when the zero length object is specified", async () => {
       const { recordsArray: assertedItemsArray } =
         await serverModel.getByContents({});
       expect(assertedItemsArray.length).to.eq(5);
+    });
+
+    it("shouldn't search when wrong query is specified", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.getByContents("a");
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
     });
   });
 
@@ -263,6 +274,17 @@ describe("Model", () => {
       expect(errorMsg).not.to.null;
     });
 
+    it("shouldn't insert item when wrong query is specified", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.create("a");
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
+    });
+
     it("shouldn't insert the already exists item (ja: not empty, en: not empty)", async () => {
       const {
         recordsArray: assertedItemsArray,
@@ -305,11 +327,7 @@ describe("Model", () => {
     });
 
     it("should insert the array within deplication item.", async () => {
-      const {
-        recordsArray: assertedItemsArray,
-        errorCode: errorCode,
-        errorMsg: errorMsg,
-      } = await serverModel.create([
+      const { recordsArray: assertedItemsArray } = await serverModel.create([
         {
           ja: "マッシュル-MASHLE-",
           en: "Mashle: Magic and Muscles",
@@ -340,9 +358,9 @@ describe("Model", () => {
     });
   });
 
-  describe("update", () => {
+  describe("updateById", () => {
     it("should update item when existed id and ja is specified", async () => {
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 1,
         {
           ja: "リィンカーネーションの花弁",
@@ -355,7 +373,7 @@ describe("Model", () => {
     });
 
     it("should update item when existed id and en is specified", async () => {
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 1,
         {
           en: "Cities: Skylines",
@@ -367,7 +385,7 @@ describe("Model", () => {
     });
 
     it("should update item when existed id and the pair of (ja, en:empty) is specified", async () => {
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 1,
         {
           ja: "リィンカーネーションの花弁",
@@ -381,7 +399,7 @@ describe("Model", () => {
     });
 
     it("should update item when existed id and the pair of (ja:null, en) is specified", async () => {
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 2,
         {
           ja: null,
@@ -395,7 +413,7 @@ describe("Model", () => {
     });
 
     it("should update item when existed id and the pair of (ja, en) is specified", async () => {
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 3,
         {
           ja: "灯火の星",
@@ -410,11 +428,11 @@ describe("Model", () => {
 
     // insertと挙動が異なるので注意
     it("should update item when existed id and the pair of (ja:null, en:empty) is specified", async () => {
-      await serverModel.update(LastIdNum + 5, {
+      await serverModel.updateById(LastIdNum + 5, {
         ja: "dummy",
         en: "dummy",
       }); // これを実施しておかないと、一意性違反になるので注意
-      const { recordsArray: assertedItemsArray } = await serverModel.update(
+      const { recordsArray: assertedItemsArray } = await serverModel.updateById(
         LastIdNum + 4,
         {
           ja: null,
@@ -427,27 +445,12 @@ describe("Model", () => {
       expect(assertedItemsArray[0].en).to.null;
     });
 
-    it("shouldn't update item when zero length object is specidifed as query", async () => {
-      await serverModel.update(LastIdNum + 5, {
-        ja: "dummy",
-        en: "dummy",
-      }); // 前項との対比となるテストなので、念のため実施
-      const {
-        recordsArray: assertedItemsArray,
-        errorCode: errorCode,
-        errorMsg: errorMsg,
-      } = await serverModel.update(LastIdNum + 4, {});
-      expect(assertedItemsArray).to.null;
-      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
-      expect(errorMsg).not.to.null;
-    });
-
     it("shouldn't update item when non-existed id is specified", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
         errorMsg: errorMsg,
-      } = await serverModel.update(-1, {
+      } = await serverModel.updateById(-1, {
         ja: "チェンソーマン",
         en: "Chainsaw Man",
       });
@@ -456,12 +459,41 @@ describe("Model", () => {
       expect(errorMsg).to.null;
     });
 
+    it("shouldn't update item when the type of id is wrong.", async () => {
+      const {
+        recordsArray: assertItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.updateById("a", {
+        ja: "すずめの戸締まり",
+        en: "Suzume no Tojimari",
+      });
+      expect(assertItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
+    });
+
+    it("shouldn't update item when zero length object is specidifed as query", async () => {
+      await serverModel.updateById(LastIdNum + 5, {
+        ja: "dummy",
+        en: "dummy",
+      }); // 前項との対比となるテストなので、念のため実施
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.updateById(LastIdNum + 4, {});
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
+    });
+
     it("shouldn't update item when wrong query is specified", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
         errorMsg: errorMsg,
-      } = await serverModel.update(LastIdNum + 1, [
+      } = await serverModel.updateById(LastIdNum + 1, [
         {
           ja: "鬼滅の刃",
           en: "Demon Slayer: Kimetsu no Yaiba",
@@ -472,6 +504,36 @@ describe("Model", () => {
         },
       ]);
       expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
+    });
+  });
+
+  describe("deleteById", () => {
+    it("should delete item", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.deleteById(
+        LastIdNum + 1
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 1);
+      expect(assertedItemsArray[0].ja).to.eq("相棒");
+      expect(assertedItemsArray[0].en).to.eq("AIBOU: Tokyo Detective Duo");
+    });
+
+    it("shouldn't delete item when non-existent id is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.deleteById(
+        -1
+      );
+      expect(assertedItemsArray.length).to.eq(0);
+    });
+
+    it("shouldn't delete item when the type of id is wrong.", async () => {
+      const {
+        recordsArray: assertItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.deleteById("a");
+      expect(assertItemsArray).to.null;
       expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
       expect(errorMsg).not.to.null;
     });
