@@ -239,7 +239,7 @@ describe("Model", () => {
       expect(assertedItemsArray[0].en).to.eq("According to You");
     });
 
-    it("should insert new ja (not empty)", async () => {
+    it("should insert new ja (not empty) only", async () => {
       const { recordsArray: assertedItemsArray } = await serverModel.create({
         ja: "ミセス・ノイズィ",
       });
@@ -252,7 +252,7 @@ describe("Model", () => {
       expect(assertedItemsArray[0].en).to.null;
     });
 
-    it("shouldn't insert the already exists item (undefined)", async () => {
+    it("shouldn't insert the zero length object", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
@@ -291,7 +291,7 @@ describe("Model", () => {
       expect(errorMsg).not.to.null;
     });
 
-    it("shouldn't insert the already exists item (en: null)", async () => {
+    it("shouldn't insert the all null object", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
@@ -408,6 +408,7 @@ describe("Model", () => {
       expect(assertedItemsArray[0].en).to.eq("World of Light");
     });
 
+    // insertと挙動が異なるので注意
     it("should update item when existed id and the pair of (ja:null, en:empty) is specified", async () => {
       await serverModel.update(LastIdNum + 5, {
         ja: "dummy",
@@ -424,6 +425,21 @@ describe("Model", () => {
       expect(assertedItemsArray[0].id).to.eq(LastIdNum + 4);
       expect(assertedItemsArray[0].ja).to.null;
       expect(assertedItemsArray[0].en).to.null;
+    });
+
+    it("shouldn't update item when zero length object is specidifed as query", async () => {
+      await serverModel.update(LastIdNum + 5, {
+        ja: "dummy",
+        en: "dummy",
+      }); // 前項との対比となるテストなので、念のため実施
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.update(LastIdNum + 4, {});
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
     });
 
     it("shouldn't update item when non-existed id is specified", async () => {
