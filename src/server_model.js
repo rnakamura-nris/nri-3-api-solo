@@ -64,8 +64,6 @@ module.exports = {
    */
   getByContents(jsonQuery) {
     let query = knex.select().from(TABLE_NAME);
-
-    // 後述のparseJsonQueryと共通の処理あり。可読性優先で、callback利用による共通化は行わない
     Keys.forEach((key) =>
       query.where((qb) => {
         if (key in jsonQuery === false) {
@@ -104,18 +102,33 @@ module.exports = {
    * @param {Object} queryJson - The item. AN ARRAY IS NOT ACCEPTED.
    * @return {Object} The parsed item.
    */
-  parseJsonQuery(jsonQuery) {
-    let newJsonQuery = {};
+  parseJsonQuery(jsonQuery, insertModeEnabled = true) {
+    if (
+      !jsonQuery instanceof Object ||
+      jsonQuery instanceof Array ||
+      Object.keys(jsonQuery).length < 1
+    ) {
+      return null;
+    }
 
+    let newJsonQuery = {},
+      hasNotNullValue = false;
     Keys.forEach((key) => {
       if (key in jsonQuery) {
         if (jsonQuery[key] === null || jsonQuery[key] === "") {
           newJsonQuery[key] = null;
         } else {
           newJsonQuery[key] = jsonQuery[key];
+          hasNotNullValue = true;
         }
       }
     });
+
+    if (insertModeEnabled && !hasNotNullValue) {
+      return null;
+    } else if (!insertModeEnabled && Object.keys(newJsonQuery).length < 1) {
+      return null;
+    }
 
     return newJsonQuery;
   },
@@ -126,6 +139,10 @@ module.exports = {
    * @return {Object} The array of deduplicated items.
    */
   deDupJsonQueryArray(jsonQueryArray) {
+    if (!Array.isArray(jsonQueryArray)) {
+      return null;
+    }
+
     const result = jsonQueryArray.filter((elm, i, self) => {
       const fTmp = self.findIndex((elm2) => {
         let fiTmp = true;
@@ -146,16 +163,26 @@ module.exports = {
    * @return {Promise<number>} A promise that resolves to the order that was created.
    */
   create(queryJson) {
-    let newQueryJsonArray = new Array();
+    let newQueryJsonArray = null;
 
     if (Array.isArray(queryJson)) {
       newQueryJsonArray = this.deDupJsonQueryArray(
-        queryJson.map((elm) => this.parseJsonQuery(elm))
+        queryJson.map((elm) => this.parseJsonQuery(elm, true))
       );
-
-      //newQueryJsonArray = queryJson.map((elm) => this.parseJsonQuery(elm));
     } else {
-      newQueryJsonArray.push(this.parseJsonQuery(queryJson));
+      const newQueryJson = this.parseJsonQuery(queryJson, true);
+      if (newQueryJson) {
+        newQueryJsonArray = new Array(newQueryJson);
+      }
+    }
+
+    // newQueryJsonArrayが空のままinsert句に入力されると成功してしまう可能性があり、違和感のある挙動となりかねないので、事前チェック
+    if (!newQueryJsonArray) {
+      return {
+        recordsArray: null,
+        errorCode: -1,
+        errorMsg: "query is something wrong.",
+      };
     }
 
     return knex(TABLE_NAME)
@@ -182,5 +209,35 @@ module.exports = {
    * @param {Object} queryJson - The new item data to modify. AN ARRAY IS NOT ACCEPTED.
    * @return {Promise<number>} A promise that resolves to the id of the updated item.
    */
-  update(id, queryJson) {},
+  update(id, queryJson) {
+    const newQueryJson = this.parseJsonQuery(queryJson, false);
+
+    // update句にnullやundefinedが入ると例外で落ちるので、事前にチェックする
+    if (!newQueryJson) {
+      return {
+        recordsArray: null,
+        errorCode: -1,
+        errorMsg: "query is something wrong.",
+      };
+    }
+
+    return knex(TABLE_NAME)
+      .where("id", "=", id)
+      .update(newQueryJson)
+      .returning("*")
+      .then((res) => {
+        return {
+          recordsArray: res,
+          errorCode: null,
+          errorMsg: null,
+        };
+      })
+      .catch((err) => {
+        return {
+          recordsArray: null,
+          errorCode: Number(err.code),
+          errorMsg: err.message,
+        };
+      });
+  },
 };

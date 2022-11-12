@@ -61,15 +61,29 @@ describe("Model", () => {
   });
 
   describe("getById", () => {
-    it("should get order by id", async () => {
-      const { recordsArray: allItemsArray } = await serverModel.getAll();
-      const idNum = allItemsArray[2].id;
+    it("should get item", async () => {
       const { recordsArray: assertItemsArray } = await serverModel.getById(
-        idNum
+        2 + LastIdNum
       );
       expect(assertItemsArray).to.exist;
       expect(assertItemsArray.length).to.eq(1);
-      expect(assertItemsArray[0].id).to.eq(idNum);
+      expect(assertItemsArray[0].id).to.eq(2 + LastIdNum);
+    });
+
+    it("shouldn't get item when non-existent id is specified", async () => {
+      const { recordsArray: assertItemsArray } = await serverModel.getById(-1);
+      expect(assertItemsArray.length).to.eq(0);
+    });
+
+    it("shouldn't get item when the type of id is wrong.", async () => {
+      const {
+        recordsArray: assertItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.getById("a");
+      expect(assertItemsArray).to.null;
+      expect(errorCode).to.be.NaN;
+      expect(errorMsg).not.to.null;
     });
   });
 
@@ -190,11 +204,11 @@ describe("Model", () => {
         en: "When They Cry",
       });
       expect(assertedItemsArray.length).to.eq(1);
-      assertedItemsArray[0].id.should.deep.equal(
+      expect(assertedItemsArray[0].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 1
       );
-      assertedItemsArray[0].ja.should.deep.equal("ひぐらしのなく頃に");
-      assertedItemsArray[0].en.should.deep.equal("When They Cry");
+      expect(assertedItemsArray[0].ja).to.eq("ひぐらしのなく頃に");
+      expect(assertedItemsArray[0].en).to.eq("When They Cry");
     });
 
     it("should insert new ja (not empty) and en (empty)", async () => {
@@ -204,11 +218,11 @@ describe("Model", () => {
       });
       expect(assertedItemsArray.length).to.eq(1);
 
-      assertedItemsArray[0].id.should.deep.equal(
+      expect(assertedItemsArray[0].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 1
       );
-      assertedItemsArray[0].ja.should.deep.equal("ナイトメアアナボリズム");
-      expect(assertedItemsArray[0].en).to.be.null;
+      expect(assertedItemsArray[0].ja).to.eq("ナイトメアアナボリズム");
+      expect(assertedItemsArray[0].en).to.null;
     });
 
     it("should insert new ja (null) and en (not empty)", async () => {
@@ -218,11 +232,11 @@ describe("Model", () => {
       });
       expect(assertedItemsArray.length).to.eq(1);
 
-      assertedItemsArray[0].id.should.deep.equal(
+      expect(assertedItemsArray[0].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 1
       );
-      expect(assertedItemsArray[0].ja).to.be.null;
-      assertedItemsArray[0].en.should.deep.equal("According to You");
+      expect(assertedItemsArray[0].ja).to.null;
+      expect(assertedItemsArray[0].en).to.eq("According to You");
     });
 
     it("should insert new ja (not empty)", async () => {
@@ -231,14 +245,25 @@ describe("Model", () => {
       });
       expect(assertedItemsArray.length).to.eq(1);
 
-      assertedItemsArray[0].id.should.deep.equal(
+      expect(assertedItemsArray[0].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 1
       );
-      assertedItemsArray[0].ja.should.deep.equal("ミセス・ノイズィ");
-      expect(assertedItemsArray[0].en).to.be.null;
+      expect(assertedItemsArray[0].ja).to.eq("ミセス・ノイズィ");
+      expect(assertedItemsArray[0].en).to.null;
     });
 
-    it("should insert the already exists item (ja: not empty, en: not empty)", async () => {
+    it("shouldn't insert the already exists item (undefined)", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.create({});
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
+    });
+
+    it("shouldn't insert the already exists item (ja: not empty, en: not empty)", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
@@ -247,12 +272,12 @@ describe("Model", () => {
         ja: "世界制服をたくらむモララー",
         en: "The World Uniform Morara",
       });
-      expect(assertedItemsArray).to.be.null;
+      expect(assertedItemsArray).to.null;
       expect(errorCode).to.eq(23505); // 一意性違反
-      expect(errorMsg).not.to.be.null;
+      expect(errorMsg).not.to.null;
     });
 
-    it("should insert the already exists item (ja: not empty, en: empty)", async () => {
+    it("shouldn't insert the already exists item (ja: not empty, en: empty)", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
@@ -261,12 +286,12 @@ describe("Model", () => {
         ja: "相棒",
         en: "",
       });
-      expect(assertedItemsArray).to.be.null;
+      expect(assertedItemsArray).to.null;
       expect(errorCode).to.eq(23505); // 一意性違反
-      expect(errorMsg).not.to.be.null;
+      expect(errorMsg).not.to.null;
     });
 
-    it("should insert the already exists item (en: null)", async () => {
+    it("shouldn't insert the already exists item (en: null)", async () => {
       const {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
@@ -274,20 +299,9 @@ describe("Model", () => {
       } = await serverModel.create({
         en: null,
       });
-      expect(assertedItemsArray).to.be.null;
-      expect(errorCode).to.eq(23505); // 一意性違反
-      expect(errorMsg).not.to.be.null;
-    });
-
-    it("should insert the already exists item (undefined)", async () => {
-      const {
-        recordsArray: assertedItemsArray,
-        errorCode: errorCode,
-        errorMsg: errorMsg,
-      } = await serverModel.create({});
-      expect(assertedItemsArray).to.be.null;
-      expect(errorCode).to.eq(23505); // 一意性違反
-      expect(errorMsg).not.to.be.null;
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
     });
 
     it("should insert the array within deplication item.", async () => {
@@ -311,18 +325,121 @@ describe("Model", () => {
       ]);
       expect(assertedItemsArray.length).to.eq(2);
 
-      assertedItemsArray[0].id.should.deep.equal(
+      expect(assertedItemsArray[0].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 1
       );
-      assertedItemsArray[0].ja.should.deep.equal("マッシュル-MASHLE-");
-      assertedItemsArray[0].en.should.deep.equal("Mashle: Magic and Muscles");
-      assertedItemsArray[1].id.should.deep.equal(
+      expect(assertedItemsArray[0].ja).to.eq("マッシュル-MASHLE-");
+      expect(assertedItemsArray[0].en).to.eq("Mashle: Magic and Muscles");
+      expect(assertedItemsArray[1].id).to.eq(
         LastIdNum + fixtures.getSamples().length + 2
       );
-      assertedItemsArray[1].ja.should.deep.equal("創約 とある魔術の禁書目録");
-      assertedItemsArray[1].en.should.deep.equal(
+      expect(assertedItemsArray[1].ja).to.eq("創約 とある魔術の禁書目録");
+      expect(assertedItemsArray[1].en).to.eq(
         "A Certain Magical Index: Genesis Testament"
       );
+    });
+  });
+
+  describe("update", () => {
+    it("should update item when existed id and ja is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 1,
+        {
+          ja: "リィンカーネーションの花弁",
+        }
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 1);
+      expect(assertedItemsArray[0].ja).to.eq("リィンカーネーションの花弁");
+      expect(assertedItemsArray[0].en).to.eq("AIBOU: Tokyo Detective Duo");
+    });
+
+    it("should update item when existed id and en is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 1,
+        {
+          en: "Cities: Skylines",
+        }
+      );
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 1);
+      expect(assertedItemsArray[0].ja).to.eq("相棒");
+      expect(assertedItemsArray[0].en).to.eq("Cities: Skylines");
+    });
+
+    it("should update item when existed id and the pair of (ja, en:empty) is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 1,
+        {
+          ja: "リィンカーネーションの花弁",
+          en: "",
+        }
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 1);
+      expect(assertedItemsArray[0].ja).to.eq("リィンカーネーションの花弁");
+      expect(assertedItemsArray[0].en).to.null;
+    });
+
+    it("should update item when existed id and the pair of (ja:null, en) is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 2,
+        {
+          ja: null,
+          en: "Horrorrune",
+        }
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 2);
+      expect(assertedItemsArray[0].ja).to.null;
+      expect(assertedItemsArray[0].en).to.eq("Horrorrune");
+    });
+
+    it("should update item when existed id and the pair of (ja, en) is specified", async () => {
+      const { recordsArray: assertedItemsArray } = await serverModel.update(
+        LastIdNum + 3,
+        {
+          ja: "灯火の星",
+          en: "World of Light",
+        }
+      );
+      expect(assertedItemsArray.length).to.eq(1);
+      expect(assertedItemsArray[0].id).to.eq(LastIdNum + 3);
+      expect(assertedItemsArray[0].ja).to.eq("灯火の星");
+      expect(assertedItemsArray[0].en).to.eq("World of Light");
+    });
+
+    it("shouldn't update item when non-existed id is specified", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.update(-1, {
+        ja: "チェンソーマン",
+        en: "Chainsaw Man",
+      });
+      expect(assertedItemsArray.length).to.eq(0);
+      expect(errorCode).to.null;
+      expect(errorMsg).to.null;
+    });
+
+    it("shouldn't update item when wrong query is specified", async () => {
+      const {
+        recordsArray: assertedItemsArray,
+        errorCode: errorCode,
+        errorMsg: errorMsg,
+      } = await serverModel.update(LastIdNum + 1, [
+        {
+          ja: "鬼滅の刃",
+          en: "Demon Slayer: Kimetsu no Yaiba",
+        },
+        {
+          ja: "太陽の黙示録",
+          en: "A Spirit of the Sun",
+        },
+      ]);
+      expect(assertedItemsArray).to.null;
+      expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
+      expect(errorMsg).not.to.null;
     });
   });
 });
