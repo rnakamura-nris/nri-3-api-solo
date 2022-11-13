@@ -8,6 +8,7 @@ https://docs.google.com/document/d/e/2PACX-1vTW7s6BNRMPMgmC69YVR7yHK1A3DQQuDsTcV
 - model 層、controller 層を分けて実装しています
   - controller 層はわりかし雑かも知れませんが、model 層は（比較的）丁寧に作りこみました
 - ユーザ入力に対する制御・テストは（比較的）精緻に行いましたが、その他の異常系（DB ダウン等）に対する制御・テストは未実施です
+- 性能は意識していません
 
 ## セットアップ
 
