@@ -1,4 +1,3 @@
-const { query, json } = require("express");
 const knex = require("./knex.js");
 const TABLE_NAME = "dict";
 const Limit = 256;
@@ -7,6 +6,7 @@ const Keys = ["ja", "en"];
 module.exports = {
   TABLE_NAME,
   Limit,
+  Keys,
 
   /**
    * @return {Promise<Array>} A promise that resolves to an array of items.

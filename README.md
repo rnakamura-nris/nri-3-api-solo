@@ -111,9 +111,6 @@ $ npm install
             "description": "エラー時にのみ表示されます",
             "type": "string"
         }
-    },
-    "required": {
-        "id"
     }
 }
 ```
@@ -273,6 +270,7 @@ $ npm install
 | 200  | OK                    | 更新に成功した場合                                 |
 | 400  | BAD REQUEST           | リクエストに誤りがある場合                         |
 | 404  | NOT FOUND             | 指定された ID に対応するリソースが見つからない場合 |
+| 409  | CONFLICT              | 既存のリソースが存在していて、追加に失敗した場合   |
 | 500  | INTERNAL SERVER ERROR | その他のエラー                                     |
 
 #### レスポンスボディの JSON Schema
