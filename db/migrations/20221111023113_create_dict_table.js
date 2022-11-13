@@ -6,9 +6,8 @@ exports.up = function (knex) {
   return knex.schema
     .createTable("dict", function (table) {
       table.increments();
-      table.text("ja").index();
-      table.text("en").index();
-      table.unique("ja", "en");
+      table.text("ja").unique().index();
+      table.text("en").unique().index();
     })
     .raw(
       `CREATE UNIQUE INDEX i_unique_dict ON dict (ja, (en IS NULL OR en = '')) WHERE en IS NULL OR en = '';`
