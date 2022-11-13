@@ -105,3 +105,4 @@ dist
 
 # Custom
 .env.local
+presentation_cmd.md

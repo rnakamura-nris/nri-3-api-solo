@@ -15,6 +15,7 @@ module.exports = {
     return knex
       .select()
       .from(TABLE_NAME)
+      .orderByRaw("id asc")
       .limit(Limit)
       .then((res) => {
         return {
@@ -49,6 +50,7 @@ module.exports = {
       .select()
       .from(TABLE_NAME)
       .where("id", "=", id)
+      .orderByRaw("id asc")
       .limit(Limit)
       .then((res) => {
         return {
@@ -70,7 +72,7 @@ module.exports = {
    * @param {Object} jsonQuery - The item data to select. AN ARRAY IS NOT ACCEPTED.
    * @return {Promise<Object>} A promise that resolves to the item that matches the jsonQuery.
    */
-  getByContents(jsonQuery) {
+  getByContentsLike(jsonQuery) {
     if (!this.isJson(jsonQuery)) {
       return {
         recordsArray: null,
@@ -96,6 +98,7 @@ module.exports = {
     // console.debug(query.toSQL());
 
     return query
+      .orderByRaw("id asc")
       .limit(Limit)
       .then((res) => {
         return {

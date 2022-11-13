@@ -227,21 +227,36 @@ const setupServer = () => {
     }
   });
 
+  app.get("/item", async (req, res) => {
+    return await proceedGet(req, res);
+  });
+
   app.get("/item/:id", async (req, res) => {
+    return await proceedGet(req, res);
+  });
+
+  proceedGet = async (req, res) => {
     const errorResJson = {};
-    const resJson = Object.create(templateJson);
+    const resJsonArray = [];
+    let modelReturn;
 
     try {
-      if (!/^[-]?\d*$/.test(req.params.id)) {
+      if (/^[-]?\d*$/.test(req.params.id)) {
+        modelReturn = await serverModel.getById(Number(req.params.id));
+      } else if (req.params.id) {
         errorResJson.msg = `Path Parameter is invalid.`;
         return res.status(400).json(errorResJson);
+      } else if (!req.body || req.body.length < 0) {
+        modelReturn = await serverModel.getAll();
+      } else {
+        modelReturn = await serverModel.getByContentsLike(req.body);
       }
 
       const {
         recordsArray: recordsArray,
         errorCode: errorCode,
         errorMsg: errorMsg,
-      } = await serverModel.getById(Number(req.params.id));
+      } = modelReturn;
 
       // エラーチェック
       const { resultCode: httpStatusCode, msg: parsedErrorMsg } =
@@ -260,15 +275,23 @@ const setupServer = () => {
       }
 
       // 正常終了
-      resJson.id = recordsArray[0].id;
-      resJson.ja = recordsArray[0].ja;
-      resJson.en = recordsArray[0].en;
-      return res.status(200).json(resJson);
+      recordsArray.forEach((record) => {
+        let resJson = Object.create(templateJson);
+        resJson.id = record.id;
+        resJson.ja = record.ja;
+        resJson.en = record.en;
+        resJsonArray.push(record);
+      });
+
+      if (resJsonArray.length === 1) {
+        return res.status(200).json(resJsonArray[0]);
+      }
+      return res.status(200).json(resJsonArray);
     } catch (e) {
       errorResJson.msg = `Server error occured: ${e}`;
       return res.status(500).json(errorResJson);
     }
-  });
+  };
 
   return app;
 };

@@ -62,9 +62,10 @@ describe("Conrtoller", () => {
       const res = await request.post("/item").send(requestJson);
       res.should.be.json;
       res.should.have.status(201);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
-        LastIdNum + 6
+        LastIdNum + fixtures.getSamples().length + 1
       );
 
       JSON.parse(res.text).should.deep.equal(assertItemsArray[0]);
@@ -78,9 +79,10 @@ describe("Conrtoller", () => {
       const res = await request.post("/item").send(requestJson);
       res.should.be.json;
       res.should.have.status(201);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
-        LastIdNum + 6
+        LastIdNum + fixtures.getSamples().length + 1
       );
 
       JSON.parse(res.text).should.deep.equal(assertItemsArray[0]);
@@ -94,9 +96,10 @@ describe("Conrtoller", () => {
       const res = await request.post("/item").send(requestJson);
       res.should.be.json;
       res.should.have.status(201);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
-        LastIdNum + 6
+        LastIdNum + fixtures.getSamples().length + 1
       );
 
       JSON.parse(res.text).should.deep.equal(assertItemsArray[0]);
@@ -111,9 +114,10 @@ describe("Conrtoller", () => {
       const res = await request.post("/item").send(requestJson);
       res.should.be.json;
       res.should.have.status(201);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
-        LastIdNum + 6
+        LastIdNum + fixtures.getSamples().length + 1
       );
 
       expect(assertItemsArray[0].extra).to.be.undefined;
@@ -151,13 +155,14 @@ describe("Conrtoller", () => {
     it("should returned and updated when inputting ja and en", async () => {
       const requestId = LastIdNum + 1;
       const requestJson = {
-        ja: "名探偵コナン",
-        en: "Case Closed",
+        ja: "タコピーの原罪",
+        en: "Takopi's Original Sin",
       };
 
       const res = await request.patch(`/item/${requestId}`).send(requestJson);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -176,6 +181,7 @@ describe("Conrtoller", () => {
       const res = await request.patch(`/item/${requestId}`).send(requestJson);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -194,6 +200,7 @@ describe("Conrtoller", () => {
       const res = await request.patch(`/item/${requestId}`).send(requestJson);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -211,6 +218,7 @@ describe("Conrtoller", () => {
       const res = await request.patch(`/item/${requestId}`).send(requestJson);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -229,6 +237,7 @@ describe("Conrtoller", () => {
       const res = await request.patch(`/item/${requestId}`).send(requestJson);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -328,12 +337,13 @@ describe("Conrtoller", () => {
   });
 
   describe("DELETE /item/:id", () => {
-    it("should returned and deleted when existent id is specified.", async () => {
+    it("should returned and deleted when existent id is specified", async () => {
       const requestId = LastIdNum + 2;
 
       const res = await request.delete(`/item/${requestId}`);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       expect(JSON.parse(res.text).id).to.equal(requestId);
       expect(JSON.parse(res.text).ja).to.equal("Hunter × Hunter");
@@ -345,7 +355,7 @@ describe("Conrtoller", () => {
       expect(assertItemsArray.length).to.equal(0);
     });
 
-    it("shouldn't returned and deleted when non-existent id is specified.", async () => {
+    it("shouldn't returned and deleted when non-existent id is specified", async () => {
       const requestId = -1;
 
       const res = await request.delete(`/item/${requestId}`);
@@ -353,7 +363,7 @@ describe("Conrtoller", () => {
       res.should.have.status(404);
     });
 
-    it("shouldn't returned and deleted when type of id is wrong.", async () => {
+    it("shouldn't returned and deleted when type of id is wrong", async () => {
       const requestId = "a";
 
       const res = await request.delete(`/item/${requestId}`);
@@ -373,12 +383,13 @@ describe("Conrtoller", () => {
   });
 
   describe("GET /item/:id", () => {
-    it("should returned and deleted when existent id is specified.", async () => {
+    it("should returned record when existent id is specified", async () => {
       const requestId = LastIdNum + 2;
 
       const res = await request.get(`/item/${requestId}`);
       res.should.be.json;
       res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
 
       const { recordsArray: assertItemsArray } = await serverModel.getById(
         requestId
@@ -400,6 +411,175 @@ describe("Conrtoller", () => {
       const res = await request.get(`/item/${requestId}`);
       res.should.be.json;
       res.should.have.status(400);
+    });
+
+    it("should returned all records when json parameter is unspecified - P1", async () => {
+      const res = await request.get("/item");
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(
+        fixtures.getSamples().length
+      );
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      for (let i = 0; i < fixtures.getSamples(); i++) {
+        JSON.parse(res.text)[i].should.deep.equal(assertItemsArray[i]);
+      }
+    });
+
+    it("should returned all records when json parameter is unspecified - P2", async () => {
+      const res = await request.get("/item").send();
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(
+        fixtures.getSamples().length
+      );
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      for (let i = 0; i < fixtures.getSamples(); i++) {
+        JSON.parse(res.text)[i].should.deep.equal(assertItemsArray[i]);
+      }
+    });
+
+    it("should returned all records when json parameter is zero length", async () => {
+      const res = await request.get("/item").send({});
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(
+        fixtures.getSamples().length
+      );
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      for (let i = 0; i < fixtures.getSamples(); i++) {
+        JSON.parse(res.text)[i].should.deep.equal(assertItemsArray[i]);
+      }
+    });
+
+    it("should returned the result of partial search (ja) - P1", async () => {
+      const res = await request.get("/item").send({ ja: "を" });
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text).should.deep.equal(assertItemsArray[3]);
+    });
+
+    it("should returned the result of partial search (ja) - P2", async () => {
+      const res = await request
+        .get("/item")
+        .send({ ja: "世界制服をたくらむモララー（ウララー編）" });
+      res.should.be.json;
+      res.should.have.status(404);
+    });
+
+    it("should returned the result of partial search (ja: null)", async () => {
+      const res = await request.get("/item").send({ ja: null });
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(2);
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text)[0].should.deep.equal(assertItemsArray[2]);
+      JSON.parse(res.text)[1].should.deep.equal(assertItemsArray[4]);
+    });
+
+    it("should returned the result of partial search (en) - P1", async () => {
+      const res = await request.get("/item").send({ en: "e" });
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(3);
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text)[0].should.deep.equal(assertItemsArray[0]);
+      JSON.parse(res.text)[1].should.deep.equal(assertItemsArray[1]);
+      JSON.parse(res.text)[2].should.deep.equal(assertItemsArray[2]);
+    });
+
+    it("should returned the result of partial search (ja) - P2", async () => {
+      const res = await request
+        .get("/item")
+        .send({ en: "Hunter x Hunter (Chimera Ants Series)" });
+      res.should.be.json;
+      res.should.have.status(404);
+    });
+
+    it("should returned the result of partial search (en: empty string)", async () => {
+      const res = await request.get("/item").send({ en: "" });
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.true;
+      expect(JSON.parse(res.text).length).to.equal(2);
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text)[0].should.deep.equal(assertItemsArray[3]);
+      JSON.parse(res.text)[1].should.deep.equal(assertItemsArray[4]);
+    });
+
+    it("should returned the result of partial search (ja and en) - P1", async () => {
+      const res = await request.get("/item").send({ ja: "Hunter", en: "e" });
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text).should.deep.equal(assertItemsArray[1]);
+    });
+
+    it("should returned the result of partial search (ja:empty string and en) - P2", async () => {
+      const res = await request.get("/item").send({ ja: "", en: "e" });
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text).should.deep.equal(assertItemsArray[2]);
+    });
+
+    it("should returned the result of partial search (ja and en:null ) - P2", async () => {
+      const res = await request.get("/item").send({ ja: "制服", en: null });
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text).should.deep.equal(assertItemsArray[3]);
+    });
+
+    it("should ignore json parameter which is not included column - P1", async () => {
+      const res = await request
+        .get("/item")
+        .send({ extra: "Unneeded string..." });
+      res.should.be.json;
+      res.should.have.status(200);
+      expect(JSON.parse(res.text).length).to.equal(
+        fixtures.getSamples().length
+      );
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      for (let i = 0; i < fixtures.getSamples(); i++) {
+        JSON.parse(res.text)[i].should.deep.equal(assertItemsArray[i]);
+      }
+    });
+
+    it("should ignore json parameter which is not included column - P2", async () => {
+      const res = await request
+        .get("/item")
+        .send({ ja: "制服", en: null, extra: "Unneeded string..." });
+      res.should.have.status(200);
+      expect(Array.isArray(JSON.parse(res.text))).to.false;
+
+      const { recordsArray: assertItemsArray } = await serverModel.getAll();
+      JSON.parse(res.text).should.deep.equal(assertItemsArray[3]);
+    });
+
+    it("shouldn't succeed SQLi", async () => {
+      const res = await request
+        .get("/item")
+        .send({ ja: "'a' OR 1 = 1; -- '", en: "'a' OR 1 = 1; -- '" });
+      res.should.be.json;
+      res.should.have.status(404);
     });
   });
 });

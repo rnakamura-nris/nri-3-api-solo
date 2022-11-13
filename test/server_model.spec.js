@@ -87,10 +87,10 @@ describe("Model", () => {
     });
   });
 
-  describe("getByContents", () => {
+  describe("getByContentsLike", () => {
     it("should search from ja column (not empty)", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: "相棒",
         });
       const { recordsArray: expectedItemsArray } = await serverModel.getById(
@@ -102,7 +102,7 @@ describe("Model", () => {
 
     it("should search from ja column (empty)", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: "",
         });
       const { recordsArray: expectedItemsArray1 } = await serverModel.getById(
@@ -118,7 +118,7 @@ describe("Model", () => {
 
     it("should search from en column (not empty)", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           en: "Hunter × Hunter",
         });
       const { recordsArray: expectedItemsArray } = await serverModel.getById(
@@ -130,7 +130,7 @@ describe("Model", () => {
 
     it("should search from ja (not empty) and en (empty) column - Hit", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: "世界制服をたくらむモララー",
           en: "",
         });
@@ -143,7 +143,7 @@ describe("Model", () => {
 
     it("should search from ja (not empty) and en (empty) column - Not Hit", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: "ダーウィン事変",
           en: "",
         });
@@ -153,7 +153,7 @@ describe("Model", () => {
 
     it("should search from ja (null) and en (not empty) column", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: null,
           en: "Homestuck",
         });
@@ -166,7 +166,7 @@ describe("Model", () => {
 
     it("should search from ja (empty) and en (empty) column", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: "",
           en: "",
         });
@@ -179,7 +179,7 @@ describe("Model", () => {
 
     it("should search from ja (null) and en (null) column", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({
+        await serverModel.getByContentsLike({
           ja: null,
           en: null,
         });
@@ -192,7 +192,7 @@ describe("Model", () => {
 
     it("should search when the zero length object is specified", async () => {
       const { recordsArray: assertedItemsArray } =
-        await serverModel.getByContents({});
+        await serverModel.getByContentsLike({});
       expect(assertedItemsArray.length).to.eq(5);
     });
 
@@ -201,7 +201,7 @@ describe("Model", () => {
         recordsArray: assertedItemsArray,
         errorCode: errorCode,
         errorMsg: errorMsg,
-      } = await serverModel.getByContents("a");
+      } = await serverModel.getByContentsLike("a");
       expect(assertedItemsArray).to.null;
       expect(errorCode).to.eq(-1); // Modelによる入力チェックエラー
       expect(errorMsg).not.to.null;
